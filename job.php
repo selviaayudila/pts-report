@@ -280,7 +280,7 @@ foreach ($jobOrderData as $index => $row) {
                     'startDate' => $jobOrderDetails[$jobOrderID]['startDate'] ?? 'N/A', // StartTime
                     'endDate' => $jobOrderDetails[$jobOrderID]['endDate'] ?? 'N/A', // EndTime
                     'rejects' => [], // Untuk jenis reject
-                    'downtime' => 0, // Total downtime
+                    
                     'downtimeReasons' => [], // Rincian downtime
                 ];
             }
@@ -310,35 +310,58 @@ foreach ($jobOrderData as $index => $row) {
             }
         }
         
-// Proses downtime
-foreach ($downtimeData as $machineID => $shiftData) {
-    foreach ($shiftData as $shiftDate => $shifts) {
-        foreach ($shifts as $shift => $downtime) {
-            foreach ($results as $key => &$result) {
-                if (
-                    $result['machineID'] === $machineID &&
-                    $result['date'] === $shiftDate &&
-                    $result['shift'] === $shift
-                ) {
-                    // Format total downtime dengan 1 angka di belakang koma
-                    $result['downtime'] = number_format($result['downtime'] + $downtime['totalDowntime'], 1);
-
-                    foreach ($downtime['downtimeReasons'] as $reason => $duration) {
-                        if (!isset($result['downtimeReasons'][$reason])) {
-                            $result['downtimeReasons'][$reason] = 0;
+        foreach ($downtimeData as $machineID => $shiftData) {
+            foreach ($shiftData as $shiftDate => $shifts) {
+                foreach ($shifts as $shift => $downtime) {
+                    foreach ($results as $key => &$result) {
+                        // Pastikan data konsisten
+                        $result['machineID'] = trim($result['machineID']);
+                        $result['date'] = trim($result['date']);
+                        $result['shift'] = trim($result['shift']);
+        
+                        $machineID = trim($machineID);
+                        $shiftDate = trim($shiftDate);
+                        $shift = trim($shift);
+        
+                        // Cocokkan data
+                        if (
+                            $result['machineID'] === $machineID &&
+                            $result['date'] === $shiftDate &&
+                            $result['shift'] === $shift
+                        ) {
+                            // Hindari akumulasi berulang
+                            if (!isset($result['processed']) || !$result['processed']) {
+                                foreach ($downtime['downtimeReasons'] as $reason => $duration) {
+                                    // Penanganan khusus untuk JOS dan EOS
+                                    if ($reason === 'JOS' || $reason === 'EOS') {
+                                        // Biarkan JOS dan EOS dihitung penuh
+                                        if (!isset($result['downtimeReasons'][$reason])) {
+                                            $result['downtimeReasons'][$reason] = 0;
+                                        }
+                                        $result['downtimeReasons'][$reason] = number_format(
+                                            $result['downtimeReasons'][$reason] + $duration,
+                                            1
+                                        );
+                                    } else {
+                                        // Penanganan normal untuk alasan lainnya
+                                        if (!isset($result['downtimeReasons'][$reason])) {
+                                            $result['downtimeReasons'][$reason] = 0;
+                                        }
+                                        $result['downtimeReasons'][$reason] = number_format(
+                                            $result['downtimeReasons'][$reason] + min($duration, 7.5), 
+                                            1
+                                        );
+                                    }
+                                }
+        
+                                $result['processed'] = true;
+                            }
                         }
-                        // Format setiap alasan downtime dengan 1 angka di belakang koma
-                        $result['downtimeReasons'][$reason] = number_format(
-                            $result['downtimeReasons'][$reason] + $duration, 
-                            1
-                        );
                     }
                 }
             }
         }
-    }
-}
-
+        
 
         
     } else {

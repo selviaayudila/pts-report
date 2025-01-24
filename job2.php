@@ -106,7 +106,6 @@
               <th>MOR2</th>
               <th>JOS</th>
               <th>EOS</th>
-              <th>Total Downtime</th>
               
               
             </tr>
@@ -174,7 +173,7 @@
                   <td><?= htmlspecialchars($data['downtimeReasons']['MOR2'] ?? 0) ?></td>
                   <td><?= htmlspecialchars($data['downtimeReasons']['JOS'] ?? 0) ?></td>
                   <td><?= htmlspecialchars($data['downtimeReasons']['EOS'] ?? 0) ?></td>
-                  <td><?= htmlspecialchars($data['downtime'] ?? 0) ?></td>
+              
                 </tr>
               <?php endforeach; ?>
             <?php else: ?>
