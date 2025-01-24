@@ -329,12 +329,12 @@ foreach ($jobOrderData as $index => $row) {
                             $result['date'] === $shiftDate &&
                             $result['shift'] === $shift
                         ) {
-                            // Hindari akumulasi berulang
+                           
                             if (!isset($result['processed']) || !$result['processed']) {
                                 foreach ($downtime['downtimeReasons'] as $reason => $duration) {
                                     // Penanganan khusus untuk JOS dan EOS
                                     if ($reason === 'JOS' || $reason === 'EOS') {
-                                        // Biarkan JOS dan EOS dihitung penuh
+                                        
                                         if (!isset($result['downtimeReasons'][$reason])) {
                                             $result['downtimeReasons'][$reason] = 0;
                                         }
